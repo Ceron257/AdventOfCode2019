@@ -1,6 +1,7 @@
-#include <iostream>
-#include <fstream>
+#include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -11,7 +12,7 @@ int calculateFuelNeed (int mass, bool recursive = true)
   {
     return requiredFuel + calculateFuelNeed (requiredFuel);
   }
-  return requiredFuel;
+  return requiredFuel < 0 ? 0 : requiredFuel;
 }
 
 int main ()
