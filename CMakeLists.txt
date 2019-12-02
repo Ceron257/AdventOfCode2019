@@ -6,3 +6,4 @@ get_filename_component(inputPath ./inputs ABSOLUTE)
 add_definitions(-DINPUTS_PATH="${inputPath}")
 
 add_subdirectory(day1)
+add_subdirectory(day2)
