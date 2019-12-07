@@ -53,25 +53,48 @@ public:
       int input = 0;
       switch(opCode)
       {
-        case 1:
+        case 1: // op3 = op1 + op2
           writeValue(op3, op1 + op2);
           mCurrentPos += 4;
           break;
-        case 2:
+        case 2: // op3 = op1 * op2
           writeValue(op3, op1 * op2);
           mCurrentPos += 4;
           break;
-        case 3:
+        case 3: // op1 = user-input
           cout << "in:";
           cin >> input;
           op1 = getOperand(mCurrentPos + 1, 1);
           writeValue (op1, input);
           mCurrentPos += 2;
           break;
-        case 4:
-          op1 = getOperand(mCurrentPos + 1, 1);
-          cout << "out:" << readValue (op1) << endl;
+        case 4: // output = op1
+          cout << "out:" << op1 << endl;
           mCurrentPos += 2;
+          break;
+        case 5: // jump to op2 if op1 != 0
+          if (op1 != 0)
+          {
+            mCurrentPos = op2;
+            break;
+          }
+          mCurrentPos += 3;
+          break;
+        case 6: // jump to op2 if op1 == 0
+          if (op1 == 0)
+          {
+            mCurrentPos = op2;
+            break;
+          }
+          mCurrentPos += 3;
+          break;
+        case 7: // op3 = op1 < op2
+          writeValue (op3, op1 < op2);
+          mCurrentPos += 4;
+          break;
+        case 8: // op3 = op1 == op2
+          writeValue (op3, op1 == op2);
+          mCurrentPos += 4;
           break;
         case 99:
           break;
