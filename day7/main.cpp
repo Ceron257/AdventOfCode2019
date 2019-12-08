@@ -27,7 +27,8 @@ Digits getDigits (int number)
   return digits;
 }
 
-static queue<int> inOutQueue;
+static queue<int> inQueue;
+static queue<int> outQueue;
 
 class TuringMachine
 {
@@ -72,8 +73,9 @@ public:
           mCurrentPos += 4;
           break;
         case 3: // op1 = user-input
-          input = inOutQueue.front();
-          inOutQueue.pop ();
+          if (inQueue.empty ()) return;
+          input = inQueue.front();
+          inQueue.pop ();
           //cout << "in:" << input << endl;
           op1 = getOperand(mCurrentPos + 1, 1);
           writeValue (op1, input);
@@ -81,7 +83,7 @@ public:
           break;
         case 4: // output = op1
           //cout << "out:" << op1 << endl;
-          inOutQueue.push (op1);
+          outQueue.push (op1);
           mCurrentPos += 2;
           break;
         case 5: // jump to op2 if op1 != 0
@@ -114,6 +116,11 @@ public:
     }
   }
 
+  bool halted () const
+  {
+    return readOpCode(mCurrentPos) == 99;
+  }
+
   int readValue(int position)
   {
     if (position > mBand.size() - 1)
@@ -140,11 +147,12 @@ private:
       case 0:
         return readValue (readValue (position));
       case 1:
+      default:
         return readValue (position);
     }
   }
 
-  int readOpCode (int position)
+  int readOpCode (int position) const
   {
      auto opDigits = getDigits (mBand[position]);
      return *(opDigits.end()-2) * 10 + *(opDigits.end()-1);
@@ -164,40 +172,99 @@ int main ()
 
   vector<TuringMachine> amplifiers (5, machine);
 
-  Digits phaseSequence = {0, 1, 2, 3, 4};
-  auto maximumSequence = phaseSequence;
-  int maximumOutput = 0;
-
-  do 
   {
-    auto localAmplifiers (amplifiers);
-    inOutQueue.push (phaseSequence[0]); // phase of first amplifier
-    inOutQueue.push (0); //input for first amplifier
-    for (size_t i = 0; i < 5; i++)
-    {
-      if (i < 4) inOutQueue.push (phaseSequence[i+1]);
-      localAmplifiers[i].execute ();
-    }
-    if (inOutQueue.front () > maximumOutput)
-    {
-      maximumOutput = inOutQueue.front ();
-      maximumSequence = phaseSequence;
-    }
-    inOutQueue.pop ();
-    while (!inOutQueue.empty ())
-    {
-      assert (false);
-      cout << "+out: " << inOutQueue.front () << endl;
-      inOutQueue.pop();
-    }
-  }
-  while (next_permutation (phaseSequence.begin (), phaseSequence.end ()));
+    Digits phaseSequence = {0, 1, 2, 3, 4};
+    auto maximumSequence = phaseSequence;
+    int maximumOutput = 0;
 
-  cout << "Maximum output: " << maximumOutput << " with sequence";
-  for (int seq : maximumSequence)
-  {
-    cout << " " << seq;
+    do 
+    {
+      auto localAmplifiers (amplifiers);
+      inQueue.push (phaseSequence[0]); // phase of first amplifier
+      inQueue.push (0); //input for first amplifier
+      for (size_t i = 0; i < 5; i++)
+      {
+        if (i < 4) inQueue.push (phaseSequence[i+1]);
+        localAmplifiers[i].execute ();
+        inQueue.push (outQueue.front ());
+        outQueue.pop ();
+      }
+      if (inQueue.front () > maximumOutput)
+      {
+        maximumOutput = inQueue.front ();
+        maximumSequence = phaseSequence;
+      }
+      inQueue.pop ();
+      while (!inQueue.empty ())
+      {
+        assert (false);
+        cout << "+out: " << inQueue.front () << endl;
+        inQueue.pop();
+      }
+    }
+    while (next_permutation (phaseSequence.begin (), phaseSequence.end ()));
+
+    cout << "Maximum output: " << maximumOutput << " with sequence";
+    for (int seq : maximumSequence)
+    {
+      cout << " " << seq;
+    }
+    cout << endl;
   }
-  cout << endl;
+  cout << "Part 2:" << endl;
+  {
+    Digits phaseSequence = {5, 6, 7, 8, 9};
+    auto maximumSequence = phaseSequence;
+    int maximumOutput = 0;
+
+    do 
+    {
+      auto localAmplifiers (amplifiers);
+      bool initialRun = true;
+      while (any_of (localAmplifiers.begin (), localAmplifiers.end (), [] (auto const& amplifier)
+                                                                          { return !amplifier.halted ();}))
+      {
+        if (initialRun)
+        {
+          inQueue.push (phaseSequence[0]); // phase of first amplifier
+          inQueue.push (0); //input for first amplifier
+        }
+        else
+        {
+          //enqueue input again
+          inQueue.push(inQueue.front());
+          inQueue.pop();
+        }
+        for (size_t i = 0; i < 5; i++)
+        {
+          localAmplifiers[i].execute ();
+          if (initialRun && i < 4) inQueue.push (phaseSequence[i+1]);
+          inQueue.push (outQueue.front ()); // re-wire output to next machine
+          outQueue.pop ();
+        }
+        if (inQueue.back () > maximumOutput)
+        {
+          maximumOutput = inQueue.back ();
+          maximumSequence = phaseSequence;
+        }
+        initialRun = false;
+      }
+      inQueue.pop ();
+      while (!inQueue.empty ())
+      {
+        assert (false);
+        cout << "+out: " << inQueue.front () << endl;
+        inQueue.pop();
+      }
+    }
+    while (next_permutation (phaseSequence.begin (), phaseSequence.end ()));
+
+    cout << "Maximum output: " << maximumOutput << " with sequence";
+    for (int seq : maximumSequence)
+    {
+      cout << " " << seq;
+    }
+    cout << endl;
+  }
   return 0;
 }
