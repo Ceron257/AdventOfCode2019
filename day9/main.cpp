@@ -27,9 +27,6 @@ Digits getDigits (long long int number)
   return digits;
 }
 
-static queue<long long int> inQueue;
-static queue<long long int> outQueue;
-
 class TuringMachine
 {
 public:
@@ -84,7 +81,6 @@ public:
           break;
         case 4: // output = op1
           cout << "out:" << op1 << endl;
-          outQueue.push (op1);
           mCurrentPos += 2;
           break;
         case 5: // jump to op2 if op1 != 0
