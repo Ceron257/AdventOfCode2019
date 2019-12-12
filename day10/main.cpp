@@ -8,6 +8,9 @@
 #include <vector>
 #include <numeric>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 using namespace std;
 
 class Vec
@@ -36,7 +39,7 @@ public:
 
   Vec& normalize ()
   {
-    auto divisor = std::gcd (x,y);
+    auto divisor = gcd (x,y);
     x /= divisor;
     y /= divisor;
     return *this;
@@ -51,7 +54,7 @@ public:
     auto leftDot = dot(left);
 
     auto angle = acos (upDot/euclidLength());
-    angle *= 180.0/3.141592653589793238462643383279502884197169399375105820974;
+    angle *= 180.0/M_PI;
     if (leftDot > 0)
     {
       angle = 360.0 - angle;
@@ -157,7 +160,6 @@ int main ()
     }
     if (knownDiretions.size () >= maxKnownDirections)
     {
-      cout << knownDiretions.size () << endl;
       maxKnownDirections = knownDiretions.size();
       bestPos = refPos;
     }
@@ -179,32 +181,23 @@ int main ()
   sort(asteroidsToVaporize.begin(), asteroidsToVaporize.end());
   size_t sightBlockers = 0;
   Vec currentDir = Vec(asteroidsToVaporize[0]).normalize ();
-  for (auto& bla : asteroidsToVaporize)
+  for (auto& asteroid : asteroidsToVaporize)
   {
-    if (!(Vec(bla).normalize() == currentDir))
+    if (!(Vec(asteroid).normalize() == currentDir))
     {
-      currentDir = Vec(bla).normalize();
-      bla.numSightBlockers = 0;
+      currentDir = Vec(asteroid).normalize();
+      asteroid.numSightBlockers = 0;
       sightBlockers = 1;
     }
     else
     {
-      bla.numSightBlockers = sightBlockers;
+      asteroid.numSightBlockers = sightBlockers;
       sightBlockers++;
     }
-
-    auto length = bla.length();
-    auto angle = Vec(bla).normalize().angleToUp();
-    cout << "x:" << bla.x << " y:" << bla.y << "\ta:" << angle << "\tl:" << length << " b:" << bla.numSightBlockers << endl;
   }
   sort (asteroidsToVaporize.begin(), asteroidsToVaporize.end(), MiningOrder ());
   size_t index = 0;
-  for (auto& bla : asteroidsToVaporize)
-  {
-    auto length = bla.length();
-    auto angle = Vec(bla).normalize().angleToUp();
-    cout << index << ": x:" << bla.x << " y:" << bla.y << " x:" << bla.ref->x << " y:" << bla.ref->y << "\ta:" << angle << "\tl:" << length << " b:" << bla.numSightBlockers << endl;
-    index++;
-  }
+
+  cout << "200th x*100+y = " << asteroidsToVaporize[199].ref->x * 100 + asteroidsToVaporize[199].ref->y << endl;
   return 0;
 }
