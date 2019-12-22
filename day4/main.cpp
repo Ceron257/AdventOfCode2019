@@ -3,6 +3,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -73,6 +74,7 @@ bool hasIncreasingDigits (Digits const& digits)
 
 int main ()
 {
+  auto start = chrono::high_resolution_clock::now();
   int startNumber = 245182;
   int stopNumber = 790572;
   auto isPasswordValid = [] (int password)
@@ -86,8 +88,6 @@ int main ()
 
   auto validPasswords = count_if (possiblePasswords.begin (), possiblePasswords.end (), isPasswordValid);
 
-  hasAdjacentDigitsStrict (getDigits (111122));
-
   auto isPasswordValidStrict = [] (int password)
   {
     auto digits = getDigits (password);
@@ -95,6 +95,12 @@ int main ()
   };
 
   auto validPasswordsStrict = count_if (possiblePasswords.begin (), possiblePasswords.end (), isPasswordValidStrict);
+
+  auto end = chrono::high_resolution_clock::now();
+
+  chrono::duration<double, milli> duration = end - start;
+
+  cout << "runtime " << duration.count() << endl;
 
   cout << "Found " << validPasswords << " valid passwords!" << endl;
   cout << "Found " << validPasswordsStrict << " valid strict passwords!" << endl;
